@@ -1,29 +1,30 @@
 import os
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate
 
 # Paths
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "smartflo_docs.txt")
 EMBEDDINGS_DIR = os.path.join(os.path.dirname(__file__), "..", "embeddings")
 
 # Prompt template — strictly restricts answers to provided context
-PROMPT_TEMPLATE = """You are a helpful assistant that answers questions about Smartflo documentation.
-Use ONLY the following context to answer the question. If the answer is not found in the context,
-respond with: "This information is not available in the documentation."
-
-Context:
-{context}
-
-Question: {question}
-
-Answer:"""
+SYSTEM_PROMPT = (
+    "You are a helpful assistant for Smartflo documentation queries. "
+    "Use strictly the provided context to answer the question. "
+    "If the answer is not found in the context, respond with: "
+    "'This information is not available in the documentation.'\n\n"
+    "Context:\n{context}"
+)
 
 
 def load_and_split_docs():
     """Load the Smartflo documentation text file and split it into chunks."""
+    if not os.path.exists(DATA_PATH):
+        raise FileNotFoundError(f"Documentation file not found at {DATA_PATH}")
+        
     with open(DATA_PATH, "r", encoding="utf-8") as f:
         raw_text = f.read()
 
@@ -55,23 +56,19 @@ def get_or_create_vectorstore(docs):
 
 
 def get_rag_chain():
-    """Build and return the full RAG chain."""
+    """Build and return the full RAG chain using LCEL (modern way)."""
     docs = load_and_split_docs()
     vectorstore = get_or_create_vectorstore(docs)
-
-    prompt = PromptTemplate(
-        template=PROMPT_TEMPLATE,
-        input_variables=["context", "question"],
-    )
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
 
-    chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=vectorstore.as_retriever(search_kwargs={"k": 3}),
-        return_source_documents=False,
-        chain_type_kwargs={"prompt": prompt},
-    )
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", SYSTEM_PROMPT),
+        ("human", "{input}"),
+    ])
 
-    return chain
+    question_answer_chain = create_stuff_documents_chain(llm, prompt)
+    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+
+    return rag_chain

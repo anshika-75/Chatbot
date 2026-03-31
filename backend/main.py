@@ -46,8 +46,8 @@ async def chat(request: ChatRequest):
     if rag_chain is None:
         return ChatResponse(response="The server is still initializing. Please try again in a moment.")
 
-    result = rag_chain.invoke({"query": request.query})
-    return ChatResponse(response=result["result"])
+    result = rag_chain.invoke({"input": request.query})
+    return ChatResponse(response=result["answer"])
 
 
 @app.get("/health")
