@@ -1,0 +1,36 @@
+First-Time Login
+If you are logging into the Smartflo portal for the first time, please check your email for your login details. Your welcome email includes both your login credentials and the URL to access the Smartflo portal.
+
+To log in to the Smartflo Portal, follow these steps:
+1. Click on the URL provided in your welcome email. This link will redirect you to the Smartflo portal.
+2. Enter your login ID and password, then click Login.
+3. If this is your first time signing in, you will be prompted to change your password.
+4. After resetting your password, re-enter your login ID and new password to access your Smartflo account.
+
+What to Do If You've Entered an Incorrect Password Multiple Times
+If you enter an incorrect login ID or password three times, a warning email will notify you of the failed login attempts. After five failed attempts, your account will be temporarily locked for security purposes. A notification with a password reset link will be sent to your registered email. You can use this link to reset your password and unlock your account, or reset it via the "Forgot Password?" option by verifying the OTP sent to your registered email and contact number.
+
+Dashboard
+The Dashboard provides an overview of operations including Active Calls, Business Information, Profile, Service Requests, and password management options.
+
+Active Calls
+Allows you to view active ongoing calls within the portal.
+
+User Management
+Add User: Setup new users.
+Pending Users: Users whose accounts are pending activation.
+All Users: Overview of all system users.
+Add User Role: Provide specific permissions depending on functions.
+
+Integrations
+Smartflo can integrate with Zoho CRM, Salesforce CRM, Freshdesk, HubSpot, Kapture, Zendesk CRM, Bitrix24, Microsoft Dynamics 365, Leadsquared CRM, and Google Sheets using Webhooks. 
+
+Call Detail Records (CDR)
+Call Logs can be downloaded and viewed from the Call Details section. Includes details about inbound, outbound, and missed calls.
+
+WhatsApp Channel
+You can configure WhatsApp Voice and Messaging for New Customers.
+
+Policies
+Data Retention Policy: Describes how long call data and logs are retained in the system.
+Customer Service Support SLA: Outlines the service level agreements regarding query response times and system uptime.
