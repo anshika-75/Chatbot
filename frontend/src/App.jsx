@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { Send, Bot, User, Loader2 } from "lucide-react";
+import { Send, Cloud, User, Loader2 } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -62,10 +62,10 @@ export default function App() {
   return (
     <div className="flex flex-col h-screen bg-white md:bg-gray-50">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center justify-center h-16 bg-white border-b shadow-sm shrink-0">
-        <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-          <Bot className="w-6 h-6 text-blue-600" />
-          Smartflo AI
+      <header className="sticky top-0 z-10 flex items-center justify-center p-4 bg-white border-b shadow-sm shrink-0">
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <Cloud className="w-8 h-8 text-orange-500 fill-orange-100" />
+          <span className="bg-gradient-to-r from-orange-500 to-orange-400 text-transparent bg-clip-text">Smartflo</span> AI
         </h1>
       </header>
 
@@ -84,10 +84,10 @@ export default function App() {
                 <div
                   className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5",
-                    m.role === "assistant" ? "bg-blue-600 text-white" : "bg-gray-800 text-white"
+                    m.role === "assistant" ? "bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-sm" : "bg-gray-800 text-white"
                   )}
                 >
-                  {m.role === "assistant" ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                  {m.role === "assistant" ? <Cloud className="w-5 h-5 fill-white" /> : <User className="w-5 h-5" />}
                 </div>
                 <div className="flex flex-col gap-1 min-w-0 flex-1">
                   <span className="font-semibold text-sm text-gray-800">
@@ -104,13 +104,13 @@ export default function App() {
           {isLoading && (
             <div className="px-4 py-8 md:px-6 w-full flex justify-center bg-gray-50 md:bg-white rounded-xl shadow-sm my-2 md:mx-4 md:w-auto md:border border-gray-100">
               <div className="flex gap-4 w-full max-w-2xl items-start">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                  <Cloud className="w-5 h-5 fill-white" />
                 </div>
                 <div className="flex flex-col gap-1 min-w-0">
                   <span className="font-semibold text-sm text-gray-800">Smartflo AI</span>
                   <div className="flex items-center gap-2 text-gray-500 h-6 mt-1">
-                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                    <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
                     <span className="text-sm">Thinking...</span>
                   </div>
                 </div>
@@ -125,7 +125,7 @@ export default function App() {
         <div className="max-w-3xl mx-auto px-4 md:px-6">
           <form
             onSubmit={handleSubmit}
-            className="relative flex items-end bg-white border shadow-sm md:shadow-md rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-500 transition-all border-gray-300"
+            className="relative flex items-end bg-white border shadow-sm md:shadow-md rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-orange-100 focus-within:border-orange-500 transition-all border-gray-300"
           >
             <textarea
               className="w-full max-h-48 resize-none py-3.5 pl-4 pr-12 focus:outline-none bg-transparent placeholder-gray-500"
@@ -148,7 +148,7 @@ export default function App() {
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:hover:bg-blue-600 flex items-center justify-center"
+                className="p-2 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-xl hover:from-orange-600 hover:to-orange-500 transition-all disabled:opacity-40 disabled:hover:from-orange-500 disabled:hover:to-orange-400 flex items-center justify-center shadow-sm"
               >
                 <Send className="w-4 h-4" />
               </button>

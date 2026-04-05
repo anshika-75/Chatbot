@@ -1,6 +1,7 @@
 import os
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -29,8 +30,8 @@ def load_and_split_docs():
         raw_text = f.read()
 
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=50,
+        chunk_size=1500,
+        chunk_overlap=200,
         separators=["\n\n", "\n", ". ", " ", ""],
     )
 
@@ -40,7 +41,7 @@ def load_and_split_docs():
 
 def get_or_create_vectorstore(docs):
     """Load existing FAISS index or create a new one from documents."""
-    embeddings = OpenAIEmbeddings()
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
     if os.path.exists(os.path.join(EMBEDDINGS_DIR, "index.faiss")):
         print("📂 Loading existing FAISS index...")
@@ -59,9 +60,9 @@ def get_rag_chain():
     """Build and return the full RAG chain using LCEL (modern way)."""
     docs = load_and_split_docs()
     vectorstore = get_or_create_vectorstore(docs)
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+    llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", SYSTEM_PROMPT),
