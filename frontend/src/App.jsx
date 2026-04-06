@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { Send, Cloud, User, Loader2 } from "lucide-react";
+import { Send, Cloud, User, Loader2, Image as ImageIcon, X } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -17,6 +17,7 @@ export default function App() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef(null);
 
@@ -26,18 +27,32 @@ export default function App() {
     }
   }, [messages, isLoading]);
 
+  
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { id: Date.now().toString(), role: "user", content: input.trim() };
+    const userMessage = { id: Date.now().toString(), role: "user", content: input.trim(), image: selectedImage };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setSelectedImage(null);
     setIsLoading(true);
 
     try {
       const response = await axios.post("http://localhost:8000/chat", {
         query: userMessage.content,
+        image_base64: userMessage.image,
       });
       
       const botMessage = {
@@ -94,6 +109,7 @@ export default function App() {
                     {m.role === "assistant" ? "Smartflo AI" : "You"}
                   </span>
                   <div className="prose prose-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words mt-1">
+                    {m.image && <img src={m.image} alt="upload" className="max-w-[200px] mb-2 rounded-lg border shadow-sm" />}
                     {m.content}
                   </div>
                 </div>
@@ -123,12 +139,24 @@ export default function App() {
       {/* Input Area */}
       <footer className="w-full shrink-0 bg-white md:bg-transparent pb-4">
         <div className="max-w-3xl mx-auto px-4 md:px-6">
+          {selectedImage && (
+            <div className="mb-2 relative inline-block">
+              <img src={selectedImage} alt="preview" className="h-20 rounded-lg border shadow-sm" />
+              <button onClick={() => setSelectedImage(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
           <form
             onSubmit={handleSubmit}
             className="relative flex items-end bg-white border shadow-sm md:shadow-md rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-orange-100 focus-within:border-orange-500 transition-all border-gray-300"
           >
+            <label className="p-3 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors">
+               <ImageIcon className="w-5 h-5 mt-1" />
+               <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+            </label>
             <textarea
-              className="w-full max-h-48 resize-none py-3.5 pl-4 pr-12 focus:outline-none bg-transparent placeholder-gray-500"
+              className="w-full max-h-48 resize-none py-3.5 pl-2 pr-12 focus:outline-none bg-transparent placeholder-gray-500" 
               placeholder="Ask anything about Smartflo..."
               rows={1}
               value={input}
@@ -147,7 +175,7 @@ export default function App() {
             <div className="absolute right-2 bottom-2">
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={(!input.trim() && !selectedImage) || isLoading}
                 className="p-2 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-xl hover:from-orange-600 hover:to-orange-500 transition-all disabled:opacity-40 disabled:hover:from-orange-500 disabled:hover:to-orange-400 flex items-center justify-center shadow-sm"
               >
                 <Send className="w-4 h-4" />

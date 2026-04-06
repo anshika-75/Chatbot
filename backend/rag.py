@@ -6,6 +6,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage
 
 # Paths
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "smartflo_docs.txt")
@@ -24,6 +25,9 @@ SYSTEM_PROMPT = (
     "Use strictly the provided context to answer the question. If the specific technical answer is not found, politely say 'This information is not available in my documentation currently.'\n\n"
     "Context:\n{context}"
 )
+
+# Global variables to share the vector retriever across functions without reloading FAISS from disk
+global_retriever = None
 
 
 def load_and_split_docs():
@@ -62,10 +66,11 @@ def get_or_create_vectorstore(docs):
 
 
 def get_rag_chain():
-    """Build and return the full RAG chain using LCEL (modern way)."""
+    """Build and return the full text-only RAG chain."""
+    global global_retriever
     docs = load_and_split_docs()
     vectorstore = get_or_create_vectorstore(docs)
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+    global_retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
     llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0)
 
@@ -75,6 +80,34 @@ def get_rag_chain():
     ])
 
     question_answer_chain = create_stuff_documents_chain(llm, prompt)
-    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+    rag_chain = create_retrieval_chain(global_retriever, question_answer_chain)
 
     return rag_chain
+
+
+def get_vision_rag_response(query: str, image_base64: str) -> str:
+    """Handle multimodal inputs (image + text) using Groq Vision Model."""
+    global global_retriever
+    
+    # Provide empty context if global retriever wasn't instantly initialized
+    context = ""
+    if global_retriever:
+        retrieved_docs = global_retriever.invoke(query)
+        context = "\n\n".join([d.page_content for d in retrieved_docs])
+
+    # Groq Vision Model specifically trained to ingest uploaded image maps
+    llm = ChatGroq(model_name="llama-3.2-11b-vision-preview", temperature=0)
+    
+    # Inject context manually into string since Vision array expects flat text strings and structured image blocks
+    prompt_text = SYSTEM_PROMPT.replace("{context}", context)
+    prompt_text += f"\n\nUser Question: {query}"
+    
+    message = HumanMessage(
+        content=[
+            {"type": "text", "text": prompt_text},
+            {"type": "image_url", "image_url": {"url": image_base64}}
+        ]
+    )
+    
+    result = llm.invoke([message])
+    return result.content

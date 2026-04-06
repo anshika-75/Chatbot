@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from typing import Optional
 from rag import get_rag_chain
 
 load_dotenv()
@@ -22,6 +23,7 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     query: str
+    image_base64: Optional[str] = None
 
 
 class ChatResponse(BaseModel):
@@ -46,8 +48,13 @@ async def chat(request: ChatRequest):
     if rag_chain is None:
         return ChatResponse(response="The server is still initializing. Please try again in a moment.")
 
-    result = rag_chain.invoke({"input": request.query})
-    return ChatResponse(response=result["answer"])
+    if request.image_base64:
+        from rag import get_vision_rag_response
+        result = get_vision_rag_response(request.query, request.image_base64)
+        return ChatResponse(response=result)
+    else:
+        result = rag_chain.invoke({"input": request.query})
+        return ChatResponse(response=result["answer"])
 
 
 @app.get("/health")
