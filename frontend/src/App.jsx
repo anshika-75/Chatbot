@@ -50,7 +50,8 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const apiBase = import.meta.env.VITE_API_URL || 
+        (window.location.hostname === 'localhost' ? 'http://localhost:8000' : `http://${window.location.hostname}:8000`);
       const response = await axios.post(`${apiBase}/chat`, {
         query: userMessage.content,
         image_base64: userMessage.image,
